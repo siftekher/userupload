@@ -13,14 +13,23 @@ class UserUpload {
       
    }
    
+   public function processOptions()
+   {
+       if($this->options['create_table'] ){
+           $this->createTable();
+       } else if(){
+           $this->readFromFile();
+       }
+   }
+   
    private function createTable(){
         $query = "CREATE TABLE IF NOT EXISTS ".USERS_TBL." (
             `user_id` int(11) unsigned NOT NULL auto_increment,
-            `first_name` varchar(255) NOT NULL ,
-            `last_name` varchar(255) NOT NULL ,
-            `user_email` varchar(255) NOT NULL,
+            `name` varchar(255) NOT NULL ,
+            `surname` varchar(255) NOT NULL ,
+            `email` varchar(255) NOT NULL,
             PRIMARY KEY  (`user_id`),
-            UNIQUE (user_email)
+            UNIQUE (email)
         )";
         
       try
@@ -35,24 +44,43 @@ class UserUpload {
        if(Utils::isValidEmail($email)) {
            echo 'Valid Email-> ' . $email. PHP_EOL;
            
+           if(!$this->options['dry_run'] ){
                //now insert the data
                $userData = array();
-               $userData['first_name'] = ucfirst($data[0]);
-               $userData['last_name']  = ucfirst($data[1]);
-               $userData['user_email'] = $email;
+               $userData['name']  = ucfirst($data[0]);
+               $userData['name']  = ucfirst($data[1]);
+               $userData['email'] = $email;
                
                $params          = array();
                $params['table'] = USERS_TBL;
-               $params['data'] = $userData;
+               $params['data']  = $userData;
                $this->db->insert($params);
- 
+           }
        }
        else {
            echo 'Not Valid' . $email. PHP_EOL;
        }
    }
    
-   
+   public function readFromFile(){
+      try
+      {
+          $handle = fopen($this->options['file'], "r");
+          if (!$handle) {
+             throw new Exception('Failed to open file');
+          }
+          else {
+             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                $this->processData($data);
+             }
+             fclose($handle);
+          }
+      }
+      catch(Exception $e) 
+      {
+         die($e->getMessage());
+      }
+   }
    
 }
 ?>
