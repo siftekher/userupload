@@ -17,7 +17,7 @@ class UserUpload {
    {
        if($this->options['create_table'] ){
            $this->createTable();
-       } else if(){
+       } else {
            $this->readFromFile();
        }
    }
@@ -34,7 +34,7 @@ class UserUpload {
         
       try
       {
-         $this->db->query($query, '');
+         $this->db->query($query);
       }
       catch(Exception $Exception){}
    }
@@ -45,16 +45,22 @@ class UserUpload {
            echo 'Valid Email-> ' . $email. PHP_EOL;
            
            if(!$this->options['dry_run'] ){
-               //now insert the data
-               $userData = array();
-               $userData['name']  = ucfirst($data[0]);
-               $userData['name']  = ucfirst($data[1]);
-               $userData['email'] = $email;
-               
-               $params          = array();
-               $params['table'] = USERS_TBL;
-               $params['data']  = $userData;
-               $this->db->insert($params);
+               try {
+                   //now insert the data
+                   $userData = array();
+                   $userData['name']  = ucfirst($data[0]);
+                   $userData['surname']  = ucfirst($data[1]);
+                   $userData['email'] = $email;
+                   
+                   $params          = array();
+                   $params['table'] = USERS_TBL;
+                   $params['data']  = $userData;
+                   $userId = $this->db->insert($params);
+                   
+                   if($userId) echo 'New Insert id: '.$userId . PHP_EOL;
+               } catch(Exception $e){
+                   echo $e->getMessage();
+               }
            }
        }
        else {
